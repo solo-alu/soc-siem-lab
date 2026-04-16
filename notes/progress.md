@@ -19,7 +19,13 @@
 - [x] dvwa-vm deployed (Standard_D2s_v3, 10.0.1.6)
 - [x] kali-vm deployed (Standard_D2s_v3, 10.0.1.7)
 
+## Phase 4 — SSH Configuration
+- [x] SSH config file created (~/.ssh/config)
+- [x] jump-box accessible (ssh jump-box)
+- [x] elk-vm accessible via ProxyJump (ssh elk-vm)
+- [x] dvwa-vm accessible via ProxyJump (ssh dvwa-vm)
+- [x] kali-vm accessible via ProxyJump (ssh kali-vm)
+
 ## Next Session
-- [ ] Configure SSH config file for jump box access
-- [ ] SSH into jump box and verify connectivity
-- [ ] SSH into internal VMs via jump box
+- [ ] Install Docker on ELK VM
+- [ ] Deploy ELK stack with Docker Compose
