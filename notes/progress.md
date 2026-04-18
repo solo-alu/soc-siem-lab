@@ -51,11 +51,22 @@
 - [x] Database initialized
 - [x] Security level set to Low
 
+## Phase 8 — Attack Simulation
+- [x] Installed attack tools on Kali VM (nmap, hydra, nikto)
+- [x] Port scan against DVWA VM (nmap -sV -O 10.0.1.6)
+- [x] SSH brute force attack (Hydra) - generated Invalid user logs
+- [x] Web vulnerability scan (Nikto) - found 11 vulnerabilities
+- [x] All attacks visible in Kibana Discover (source.ip: 10.0.1.7)
+- [x] SSH Brute Force Detection rule created in Kibana
+- [x] Alert firing automatically when threshold exceeded
+
+## Attacks Detected
+- Port scan: reconnaissance of open ports
+- SSH brute force: repeated Invalid user attempts from 10.0.1.7
+- Web scan: 11 vulnerabilities found including exposed config directory,
+  missing security headers, and admin login page exposed
+
 ## Next Session
-- [ ] SSH into Kali VM
-- [ ] Install attack tools (nmap, hydra, nikto)
-- [ ] Run port scan against DVWA VM
-- [ ] Run brute force attack against DVWA
-- [ ] Run web vulnerability scan
-- [ ] Watch attacks appear in Kibana
-- [ ] Set up brute force alert in Kibana
+- [ ] Ansible automation playbooks
+- [ ] Python detection engine
+- [ ] Advanced configurations (TLS, RBAC, threat intel)
