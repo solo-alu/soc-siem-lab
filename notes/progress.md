@@ -35,7 +35,18 @@
 - [x] Elasticsearch responding on port 9200
 - [x] Kibana accessible at localhost:5601 via SSH tunnel
 
+## Phase 6 — Beats Agents
+- [x] Filebeat installed and configured on DVWA VM
+- [x] Filebeat sending logs to Logstash at 10.0.1.5:5044
+- [x] filebeat-* data view created in Kibana
+- [x] Metricbeat installed and configured on DVWA VM
+- [x] Metricbeat sending metrics to Logstash at 10.0.1.5:5044
+- [x] metricbeat-* data view created in Kibana
+- [x] CPU metrics visible in Kibana dashboard
+
 ## Next Session
-- [ ] Install Filebeat on DVWA VM
-- [ ] Install Metricbeat on DVWA VM
+- [ ] Install Docker on DVWA VM
 - [ ] Deploy DVWA container
+- [ ] Install attack tools on Kali VM
+- [ ] Run simulated attacks
+- [ ] Set up Kibana alerts
