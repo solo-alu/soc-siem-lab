@@ -26,6 +26,16 @@
 - [x] dvwa-vm accessible via ProxyJump (ssh dvwa-vm)
 - [x] kali-vm accessible via ProxyJump (ssh kali-vm)
 
+## Phase 5 — Docker + ELK Stack
+- [x] Docker installed on ELK VM
+- [x] Virtual memory increased (vm.max_map_count=262144)
+- [x] docker-compose.yml created
+- [x] Logstash pipeline and config files created
+- [x] ELK stack deployed (Elasticsearch, Logstash, Kibana)
+- [x] Elasticsearch responding on port 9200
+- [x] Kibana accessible at localhost:5601 via SSH tunnel
+
 ## Next Session
-- [ ] Install Docker on ELK VM
-- [ ] Deploy ELK stack with Docker Compose
+- [ ] Install Filebeat on DVWA VM
+- [ ] Install Metricbeat on DVWA VM
+- [ ] Deploy DVWA container
