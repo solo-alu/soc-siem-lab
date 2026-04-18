@@ -44,9 +44,18 @@
 - [x] metricbeat-* data view created in Kibana
 - [x] CPU metrics visible in Kibana dashboard
 
+## Phase 7 — DVWA Deployment
+- [x] Docker installed on DVWA VM
+- [x] DVWA container deployed on port 80
+- [x] DVWA accessible via SSH tunnel at localhost:8080
+- [x] Database initialized
+- [x] Security level set to Low
+
 ## Next Session
-- [ ] Install Docker on DVWA VM
-- [ ] Deploy DVWA container
-- [ ] Install attack tools on Kali VM
-- [ ] Run simulated attacks
-- [ ] Set up Kibana alerts
+- [ ] SSH into Kali VM
+- [ ] Install attack tools (nmap, hydra, nikto)
+- [ ] Run port scan against DVWA VM
+- [ ] Run brute force attack against DVWA
+- [ ] Run web vulnerability scan
+- [ ] Watch attacks appear in Kibana
+- [ ] Set up brute force alert in Kibana
