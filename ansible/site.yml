@@ -1,0 +1,7 @@
+---
+- name: Configure monitoring agents on DVWA VM
+  hosts: webservers
+  become: yes
+  roles:
+    - filebeat
+    - metricbeat

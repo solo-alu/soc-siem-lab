@@ -1,0 +1,19 @@
+---
+output.logstash:
+  hosts: ["{{ elk_host }}:{{ logstash_port }}"]
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+    - /var/log/auth.log
+    - /var/log/syslog
+
+filebeat.modules:
+- module: system
+  syslog:
+    enabled: true
+  auth:
+    enabled: true
+

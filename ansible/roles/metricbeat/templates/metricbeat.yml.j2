@@ -1,0 +1,13 @@
+---
+output.logstash:
+  hosts: ["{{ elk_host }}:{{ logstash_port }}"]
+
+metricbeat.modules:
+- module: system
+  metricsets:
+    - cpu
+    - memory
+    - network
+    - diskio
+  enabled: true
+  period: 10s

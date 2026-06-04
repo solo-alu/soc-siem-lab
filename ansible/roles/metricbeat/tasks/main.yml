@@ -1,0 +1,21 @@
+---
+- name: Download Metricbeat
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/beats/metricbeat/metricbeat-{{ metricbeat_version }}-amd64.deb"
+    dest: /tmp/metricbeat.deb
+
+- name: Install Metricbeat
+  apt:
+    deb: /tmp/metricbeat.deb
+
+- name: Configure Metricbeat
+  template:
+    src: metricbeat.yml.j2
+    dest: /etc/metricbeat/metricbeat.yml
+  notify: restart metricbeat
+
+- name: Enable and start Metricbeat
+  systemd:
+    name: metricbeat
+    enabled: yes
+    state: started
