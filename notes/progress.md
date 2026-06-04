@@ -3,7 +3,7 @@
 ## Phase 1 — Azure Setup
 - [x] Azure account created
 - [x] Azure CLI installed in WSL
-- [x] SSH key generated
+i- [x] SSH key generated
 - [x] Resource group created (soc-lab-rg, eastus2)
 
 ## Phase 2 — Network Infrastructure
@@ -60,13 +60,23 @@
 - [x] SSH Brute Force Detection rule created in Kibana
 - [x] Alert firing automatically when threshold exceeded
 
-## Attacks Detected
+## Phase 9 - Attacks Detected
 - Port scan: reconnaissance of open ports
 - SSH brute force: repeated Invalid user attempts from 10.0.1.7
 - Web scan: 11 vulnerabilities found including exposed config directory,
   missing security headers, and admin login page exposed
 
+## Phase 10 — Ansible Automation
+- [x] Ansible installed on local WSL (v2.16.3)
+- [x] Project structure created (roles/filebeat, roles/metricbeat)
+- [x] inventory.ini created with all 4 VMs
+- [x] Filebeat role complete (tasks, handlers, templates, defaults)
+- [x] Metricbeat role complete (tasks, handlers, templates, defaults)
+- [x] site.yml master playbook created
+
 ## Next Session
-- [ ] Ansible automation playbooks
-- [ ] Python detection engine
-- [ ] Advanced configurations (TLS, RBAC, threat intel)
+- [ ] Start VMs (lab-start)
+- [ ] Test Ansible connectivity (ansible all -i inventory.ini -m ping)
+- [ ] Run playbook (ansible-playbook -i inventory.ini site.yml)
+- [ ] Verify Filebeat and Metricbeat still running after playbook
+- [ ] Move to Python alert engine
