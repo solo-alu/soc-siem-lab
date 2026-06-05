@@ -83,3 +83,38 @@ i- [x] SSH key generated
 - [x] Automatically creates NSG deny rule in Azure
 - [x] Checks for existing block rules before creating duplicates
 - [x] Dynamic priority calculation prevents rule conflicts
+
+## Phase 12 — Threat Intel Enrichment
+- [x] AbuseIPDB integration added to alert_engine.py
+- [x] ipaddress module detects private vs public IPs
+- [x] Private IPs skip API call with explanatory message
+- [x] Public IPs query AbuseIPDB for abuse score, reports, country, ISP
+- [x] High risk IPs (score > 50) flagged with warning
+- [x] Full pipeline tested and working
+
+## Phase 13— Advanced Configurations (Option 3)
+- [x] fail2ban installed on dvwa-vm
+      maxretry=5, bantime=3600, findtime=600
+      Watches /var/log/auth.log
+      OS-level protection independent of SIEM
+
+- [x] DVWA container recreated with log volume mount
+      /var/log/dvwa-apache mapped from container to VM
+      Filebeat now watches Apache access and error logs
+
+- [x] HTTP port 80 opened in NSG (Allow-HTTP, priority 1200)
+      Enables web attack simulation from Kali VM
+
+- [x] Apache logs added to Filebeat config
+      /var/log/dvwa-apache/access.log
+      /var/log/dvwa-apache/error.log
+      Nikto web scans now visible in SIEM — 6,216 events detected
+
+- [x] Slow-and-low detection rule created in Kibana
+      Name: SSH Slow Brute Force Detection
+      Query: message: "Invalid user"
+      Threshold: IS ABOVE 10 in 10 minutes
+      Check every: 5 minutes
+      100% success rate on first test
+
+
