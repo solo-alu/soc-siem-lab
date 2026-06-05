@@ -3,6 +3,8 @@ from datetime import datetime, timedelta, timezone
 import time
 import re
 import subprocess
+import ipaddress
+import requests
 
 # Configuration
 ES_HOST = "http://localhost:9200"
@@ -12,6 +14,7 @@ TIME_WINDOW = 1       # minutes
 CHECK_INTERVAL = 60   # seconds
 RESOURCE_GROUP = "soc-lab-rg"
 NSG_NAME = "soc-lab-nsg"
+ABUSEIPDB_API_KEY = "YOUR_API_KEY_HERE"  # replace with real key when using public IPs
 
 blocked_ips = set()   # track already blocked IPs this session
 
@@ -23,6 +26,39 @@ def connect():
         return es
     except Exception as e:
         raise Exception(f"Cannot connect: {e}")
+
+def is_private_ip(ip):
+    """Check if an IP is a private/internal address."""
+    try:
+        return ipaddress.ip_address(ip).is_private
+    except ValueError:
+        return False
+
+def check_ip_reputation(ip):
+    """Query AbuseIPDB for threat intel on an IP address."""
+    if is_private_ip(ip):
+        return {
+            "skipped": True,
+            "reason": f"{ip} is a private IP — AbuseIPDB only tracks public IPs. In production this would query real attacker IPs."
+        }
+
+    try:
+        response = requests.get(
+            "https://api.abuseipdb.com/api/v2/check",
+            headers={"Key": ABUSEIPDB_API_KEY, "Accept": "application/json"},
+            params={"ipAddress": ip, "maxAgeInDays": 90}
+        )
+        data = response.json()["data"]
+        return {
+            "skipped": False,
+            "abuse_score": data["abuseConfidenceScore"],
+            "total_reports": data["totalReports"],
+            "country": data["countryCode"],
+            "isp": data["isp"],
+            "last_reported": data["lastReportedAt"]
+        }
+    except Exception as e:
+        return {"skipped": True, "reason": f"API error: {e}"}
 
 def get_failed_logins(es, minutes_back):
     now = datetime.now(timezone.utc)
@@ -124,7 +160,20 @@ def check_alerts(es):
             print(f"  Attempts:   {count} in last {TIME_WINDOW} minute(s)")
             print(f"  Threshold:  {THRESHOLD}")
 
-            # Only block if not already blocked this session
+            # Threat intel enrichment
+            intel = check_ip_reputation(ip)
+            if intel["skipped"]:
+                print(f"  [THREAT INTEL] {intel['reason']}")
+            else:
+                print(f"  [THREAT INTEL] Abuse Score:   {intel['abuse_score']}/100")
+                print(f"  [THREAT INTEL] Total Reports: {intel['total_reports']}")
+                print(f"  [THREAT INTEL] Country:       {intel['country']}")
+                print(f"  [THREAT INTEL] ISP:           {intel['isp']}")
+                print(f"  [THREAT INTEL] Last Reported: {intel['last_reported']}")
+                if intel["abuse_score"] > 50:
+                    print(f"  *** HIGH RISK — KNOWN MALICIOUS ACTOR ***")
+
+            # Block if not already blocked
             if ip not in blocked_ips:
                 block_ip_in_azure(ip)
                 blocked_ips.add(ip)

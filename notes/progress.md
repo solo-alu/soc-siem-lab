@@ -74,9 +74,12 @@ i- [x] SSH key generated
 - [x] Metricbeat role complete (tasks, handlers, templates, defaults)
 - [x] site.yml master playbook created
 
-## Next Session
-- [ ] Start VMs (lab-start)
-- [ ] Test Ansible connectivity (ansible all -i inventory.ini -m ping)
-- [ ] Run playbook (ansible-playbook -i inventory.ini site.yml)
-- [ ] Verify Filebeat and Metricbeat still running after playbook
-- [ ] Move to Python alert engine
+## Phase 11 — Python Alert Engine
+- [x] Elasticsearch Python client installed (v8.11.0)
+- [x] alert_engine.py — queries ES every 60 seconds
+- [x] Detects SSH brute force by parsing message field
+- [x] Extracts attacker IP using regex
+- [x] Fires alert with IP, attempt count, threshold
+- [x] Automatically creates NSG deny rule in Azure
+- [x] Checks for existing block rules before creating duplicates
+- [x] Dynamic priority calculation prevents rule conflicts
