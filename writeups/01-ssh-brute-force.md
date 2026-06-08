@@ -1,10 +1,35 @@
+<<<<<<< HEAD
 # Incident Report — SOC-2026-001
 ## SSH Credential Brute Force Attack
+=======
+# Incident Writeup 01 — SSH Credential Brute Force
+
+**Incident ID:** SOC-2026-001  
+**Date:** June 4, 2026  
+**Severity:** High  
+**Status:** Contained  
+**Author:** Solomon Lee  
+**Classification:** Credential Attack / Initial Access
+
+---
+
+## Executive Summary
+
+A credential brute force attack was executed against the DVWA target VM (10.0.1.6) via SSH from the Kali attacker VM (10.0.1.7). The attack generated repeated failed authentication attempts using Hydra, producing 47 failed login events within a 5-minute window. The SOC detection pipeline identified the attack through auth.log monitoring, fired a Kibana alert after 5 failures in 60 seconds, and the Python alert engine automatically created an Azure NSG deny rule blocking the source IP within 5 seconds of threshold breach. No successful authentication was recorded. The attack was fully contained at the network perimeter without manual intervention.
+
+---
+
+## Incident Overview
+>>>>>>> bcb22d8b69fc7d297edb5adf59b745acf7856970
 
 | Field | Detail |
 |-------|--------|
 | Incident ID | SOC-2026-001 |
+<<<<<<< HEAD
 | Classification | Credential Attack / Initial Access |
+=======
+| Date | June 4, 2026 |
+>>>>>>> bcb22d8b69fc7d297edb5adf59b745acf7856970
 | Severity | High |
 | CVSS v3.1 Score | 9.8 — Critical |
 | CVSS Vector | AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H |
