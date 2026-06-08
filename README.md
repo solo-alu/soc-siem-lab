@@ -332,7 +332,7 @@ Incident Response     Detection, containment, IOC identification, remediation
 
 **Solomon Lee**
 Computer Science Student, Sacramento State University (Expected Dec 2026)
-ISACA Cybersecurity Scholar | Google Cybersecurity Professional Certificate | CCNA
+ISACA Cybersecurity Scholar | Google Cybersecurity & IT Professional Certificate | CCNA
 
 [LinkedIn](https://linkedin.com/in/solomon-lee-962304192) | [GitHub](https://github.com/solo-alu) | solomonlee78@gmail.com
 
