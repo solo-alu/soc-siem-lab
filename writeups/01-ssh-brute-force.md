@@ -1,7 +1,7 @@
 # Incident Writeup 01 — SSH Credential Brute Force
 
 **Incident ID:** SOC-2026-001  
-**Date:** April 18, 2026 / June 4, 2026  
+**Date:** June 4, 2026  
 **Severity:** High  
 **Status:** Contained  
 **Author:** Solomon Lee  
@@ -20,7 +20,7 @@ A credential brute force attack was executed against the DVWA target VM (10.0.1.
 | Field | Detail |
 |-------|--------|
 | Incident ID | SOC-2026-001 |
-| Date | April 18, 2026 — June 4, 2026 |
+| Date | June 4, 2026 |
 | Severity | High |
 | Status | Contained |
 | Attack type | SSH Credential Brute Force |
