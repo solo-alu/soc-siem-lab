@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Incident Report — SOC-2026-001
 ## SSH Credential Brute Force Attack
 =======
