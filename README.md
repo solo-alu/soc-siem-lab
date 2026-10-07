@@ -24,28 +24,28 @@ Every component was built and configured manually. Every attack was simulated ag
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Microsoft Azure (eastus2)                  │
-│                   Resource Group: soc-lab-rg                  │
-│                                                               │
-│   VNet: soc-lab-vnet (10.0.0.0/16)                           │
-│   Subnet: soc-lab-subnet (10.0.1.0/24)                       │
-│                                                               │
+│                    Microsoft Azure (eastus2)                │
+│                   Resource Group: soc-lab-rg                │
+│                                                             │
+│   VNet: soc-lab-vnet (10.0.0.0/16)                          │
+│   Subnet: soc-lab-subnet (10.0.1.0/24)                      │
+│                                                             │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐      │
 │  │  jump-box   │    │   elk-vm    │    │   dvwa-vm   │      │
-│  │ 10.0.1.4   │    │ 10.0.1.5   │    │ 10.0.1.6   │      │
-│  │PUBLIC IP   │    │             │    │             │      │
-│  │ SSH entry  │    │Elasticsearch│    │   DVWA      │      │
-│  │  point     │    │  Logstash   │    │  Filebeat   │      │
-│  │            │    │   Kibana    │    │  Metricbeat │      │
+│  │ 10.0.1.4    │    │ 10.0.1.5    │    │ 10.0.1.6    │      │
+│  │PUBLIC IP    │    │             │    │             │      │
+│  │ SSH entry   │    │Elasticsearch│    │   DVWA      │      │
+│  │  point      │    │  Logstash   │    │  Filebeat   │      │
+│  │             │    │   Kibana    │    │  Metricbeat │      │
 │  └─────────────┘    └─────────────┘    │  fail2ban   │      │
-│                                         └─────────────┘      │
-│                      ┌─────────────┐                         │
-│                      │   kali-vm   │                         │
-│                      │ 10.0.1.7   │                         │
-│                      │  nmap       │                         │
-│                      │  Hydra      │                         │
-│                      │  Nikto      │                         │
-│                      └─────────────┘                         │
+│                                        └─────────────┘      │
+│                      ┌─────────────┐                        │
+│                      │   kali-vm   │                        │
+│                      │ 10.0.1.7    │                        │
+│                      │  nmap       │                        │
+│                      │  Hydra      │                        │
+│                      │  Nikto      │                        │
+│                      └─────────────┘                        │
 └─────────────────────────────────────────────────────────────┘
 ```
 
