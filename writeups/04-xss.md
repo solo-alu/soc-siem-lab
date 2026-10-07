@@ -166,6 +166,8 @@ message: "script" AND host.name: "dvwa-vm"
 
 ![Kibana showing XSS attack events](screenshots/04-kibana-xss-events.png)
 
+Detection note: this query matches the word `script` anywhere in the log line, including normal requests for JavaScript files, so it is an investigation search rather than an alert. A detection rule would match encoded payloads in the request URI, such as `%3Cscript`, `onerror=` or `document.cookie`. Stored XSS submitted by POST does not appear in the access log at all, because Apache does not log request bodies.
+
 ### Detection Limitations
 
 The XSS payloads are visible in Apache logs and searchable in Kibana after the fact. However the current SIEM has no automated detection rule for XSS patterns. The script tags appear URL-encoded in the Apache logs as `%3Cscript%3E` which requires specific pattern matching to detect.

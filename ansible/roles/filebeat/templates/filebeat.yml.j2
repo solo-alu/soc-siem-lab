@@ -2,18 +2,16 @@
 output.logstash:
   hosts: ["{{ elk_host }}:{{ logstash_port }}"]
 
+# One input with explicit paths so every log line is read exactly once.
+# (The earlier version also enabled the system module, which read auth.log and
+# syslog a second time and could double the brute-force attempt counts.)
 filebeat.inputs:
 - type: log
   enabled: true
   paths:
-    - /var/log/*.log
     - /var/log/auth.log
     - /var/log/syslog
-
-filebeat.modules:
-- module: system
-  syslog:
-    enabled: true
-  auth:
-    enabled: true
-
+    # DVWA container logs, exposed by the volume mount
+    # docker run -v /var/log/dvwa-apache:/var/log/apache2 ...
+    - /var/log/dvwa-apache/access.log
+    - /var/log/dvwa-apache/error.log

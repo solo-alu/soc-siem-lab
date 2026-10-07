@@ -3,7 +3,7 @@
 ## Phase 1 — Azure Setup
 - [x] Azure account created
 - [x] Azure CLI installed in WSL
-i- [x] SSH key generated
+- [x] SSH key generated
 - [x] Resource group created (soc-lab-rg, eastus2)
 
 ## Phase 2 — Network Infrastructure
@@ -14,7 +14,7 @@ i- [x] SSH key generated
 - [x] NSG attached to subnet
 
 ## Phase 3 — Virtual Machines
-- [x] jump-box deployed (Standard_D2s_v3, 10.0.1.4, public IP: 20.62.119.46)
+- [x] jump-box deployed (Standard_D2s_v3, 10.0.1.4, public IP)
 - [x] elk-vm deployed (Standard_D4s_v3, 10.0.1.5)
 - [x] dvwa-vm deployed (Standard_D2s_v3, 10.0.1.6)
 - [x] kali-vm deployed (Standard_D2s_v3, 10.0.1.7)
@@ -56,7 +56,7 @@ i- [x] SSH key generated
 - [x] Port scan against DVWA VM (nmap -sV -O 10.0.1.6)
 - [x] SSH brute force attack (Hydra) - generated Invalid user logs
 - [x] Web vulnerability scan (Nikto) - found 11 vulnerabilities
-- [x] All attacks visible in Kibana Discover (source.ip: 10.0.1.7)
+- [x] All attacks visible in Kibana Discover (attacker IP 10.0.1.7 in the message field; source.ip is not populated)
 - [x] SSH Brute Force Detection rule created in Kibana
 - [x] Alert firing automatically when threshold exceeded
 
@@ -83,6 +83,7 @@ i- [x] SSH key generated
 - [x] Automatically creates NSG deny rule in Azure
 - [x] Checks for existing block rules before creating duplicates
 - [x] Dynamic priority calculation prevents rule conflicts
+      (bug found later: rules landed after the allow rules on port 80 only, see Phase 14)
 
 ## Phase 12 — Threat Intel Enrichment
 - [x] AbuseIPDB integration added to alert_engine.py
@@ -115,6 +116,31 @@ i- [x] SSH key generated
       Query: message: "Invalid user"
       Threshold: IS ABOVE 10 in 10 minutes
       Check every: 5 minutes
-      100% success rate on first test
+      Rule runs without errors (Kibana's Success ratio measures rule execution,
+      not detection accuracy)
 
+## Phase 14 — Self-Review: Auto-Block Was Not Enforcing
+- [x] Found in my own writeup 01 evidence: the June 8 auto-block rule
+      Block-10-0-1-7-20260608221111 sat at priority 1201, port 80, TCP only
+- [x] Root cause 1: get_next_priority() returned max(existing) + 1, so the
+      Deny landed after Allow-SSH (1000) and Allow-HTTP (1200). NSG rules are
+      evaluated lowest number first and the first match wins, so it never fired
+- [x] Root cause 2: the rule create call set no destination port, and the
+      Azure CLI defaults that to 80, so SSH (22) was never in scope
+- [x] Root cause 3: the "already blocked" check matched any rule with the IP,
+      so the broken rule would have stopped a correct one from being created
+- [x] Fix: Deny goes in the lowest free priority below the first Allow rule
+      (100-999), all protocols, all ports; existing rules only count if they
+      actually block; IP is remembered only after Azure confirms
+- [x] Verified with a simulated Azure CLI that reproduces the June 8 rule
+      exactly with the old code and a priority-100 all-ports deny with the new
+- [ ] Re-test on Azure: nc -vz 10.0.1.6 22 from kali-vm before/after the block,
+      az network nic list-effective-nsg on dvwa-vm, screenshots into writeup 01
+- [x] Removed the system module from filebeat.yml.j2 (it read auth.log a second
+      time and could double attempt counts); engine also de-duplicates by file
+      offset
+- [x] AbuseIPDB key now read from the ABUSEIPDB_API_KEY environment variable
+- [x] Added --unblock IP to reset the lab after a test
+- [ ] Add elk-stack/docker-compose.yml and Logstash pipeline config to the repo
+      (they still live only on elk-vm)
 

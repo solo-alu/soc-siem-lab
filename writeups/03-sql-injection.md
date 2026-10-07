@@ -181,6 +181,8 @@ message: "sql" AND host.name: "dvwa-vm"
 
 ![Kibana showing SQL injection events](screenshots/03-kibana-sql-events.png)
 
+Detection note: this query finds the events because it matches DVWA's `/vulnerabilities/sqli/` path, so it also matches a harmless visit to that page. It is useful for investigation, not as an alert. A real detection rule would match the payload in the request URI, such as `UNION` with `SELECT`, `information_schema`, or an encoded quote (`%27`) followed by `OR`.
+
 ### Detection Limitations
 
 While the HTTP requests were logged and visible in Kibana, the current SIEM configuration has no dedicated SQL injection detection rule. The events are searchable after the fact but no automated alert fires when SQL injection patterns appear in web requests.
@@ -342,8 +344,6 @@ In this lab environment no recovery was required as DVWA is a training applicati
 | Tactic | Technique | Sub-technique | ID | Detected |
 | --- | --- | --- | --- | --- |
 | Initial Access | Exploit Public-Facing Application | | T1190 | Partial - logged, no alert |
-| Credential Access | Steal Web Session Cookie | | T1539 | No |
-| Credential Access | OS Credential Dumping | | T1003 | Partial - logged, no alert |
 | Discovery | System Information Discovery | | T1082 | Partial - logged, no alert |
 | Collection | Data from Information Repositories | | T1213 | Partial - logged, no alert |
 

@@ -161,6 +161,8 @@ message: "brute" AND host.name: "dvwa-vm"
 
 ![Kibana showing web brute force events](screenshots/06-kibana-web-brute-events.png)
 
+Detection note: this query matches DVWA's `/vulnerabilities/brute/` path, so a single legitimate login matches too. The attack is identified by volume: many requests to the login endpoint from one IP in a short window. That is a threshold rule, like the SSH rules in writeup 01, and is planned.
+
 ### How the Attack Appears in Apache Logs
 
 Each Hydra attempt generates one Apache access.log entry:

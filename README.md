@@ -14,9 +14,9 @@
 
 A fully functional Security Operations Center built from the ground up on Microsoft Azure, designed to simulate the detection and response capabilities of a real enterprise security team.
 
-This project deploys a private cloud network with a monitored target environment, a complete ELK Stack SIEM pipeline, automated threat detection, threat intelligence enrichment, and an automated response engine that blocks attackers at the network perimeter within seconds of detection — without human intervention.
+This project deploys a private cloud network with a monitored target environment, a complete ELK Stack SIEM pipeline, threshold-based detection rules, threat intelligence enrichment, and a Python response engine that writes Azure NSG deny rules for attacking IPs without human intervention.
 
-Every component was built and configured manually. Every attack was simulated against live infrastructure. Every detection rule was tested against real attack traffic. The result is a production-realistic security lab that demonstrates the full lifecycle of a SOC workflow: from log collection to detection to automated response.
+Every component was built and configured by hand, every attack was run against live infrastructure, and each writeup documents what was detected, what was only searchable, and what was missed. The lab covers the full SOC workflow: log collection, detection, and automated response.
 
 ---
 
@@ -132,52 +132,65 @@ Elasticsearch Query (every 60s)
   IP, attempt count, abuse score, country, ISP
          │
          ▼
-  Already blocked in Azure? → skip
+  Effective block already in Azure? → skip
+  (Deny, all ports, ahead of every Allow rule)
          │
          ▼
   az network nsg rule create
-  Priority: auto-calculated (no conflicts)
-  Source: attacker IP → Deny Inbound TCP
+  Priority: lowest free slot below the first Allow rule (100-999)
+  Source: attacker IP → Deny Inbound, all ports, all protocols
          │
          ▼
-  Attacker blocked at network perimeter
-  Time from detection to block: < 5 seconds
+  Attacker blocked at the NSG
+  Polling every 60s; the Azure call itself takes about a second
 ```
 
-### Sample Alert Output
+### Alert Output
+
+Lab attacks come from kali-vm at the private address 10.0.1.7, so AbuseIPDB enrichment is skipped by design (it only scores public IPs). The engine's output for a lab attack:
 
 ```
-[ALERT] 2026-06-05 18:13:37
+[ALERT] 2026-06-08 22:11:10
   SSH Brute Force Detected
-  Source IP:  185.220.101.45
-  Attempts:   47 in last 1 minute(s)
+  Source IP:  10.0.1.7
+  Attempts:   8 in last 1 minute(s)
   Threshold:  5
-  [THREAT INTEL] Abuse Score:   97/100
-  [THREAT INTEL] Total Reports: 2,847
-  [THREAT INTEL] Country:       RU
-  [THREAT INTEL] ISP:           AS60602 Hosting Provider LLC
-  [THREAT INTEL] Last Reported: 2026-06-05
-  *** HIGH RISK — KNOWN MALICIOUS ACTOR ***
-  [BLOCKED] 185.220.101.45 added to NSG deny list
-  Rule: Block-185-220-101-45-20260605181337 — Priority: 101
+  [THREAT INTEL] 10.0.1.7 is a private IP — AbuseIPDB only tracks public IPs. In production this would query real attacker IPs.
+  [BLOCKED] 10.0.1.7 denied on all ports and protocols
+  Rule: Block-10-0-1-7-<timestamp> — Priority: 100 (ahead of allow rules starting at 1000)
 ```
+
+The alert lines above are from the June 8 run (see [writeup 01](writeups/01-ssh-brute-force.md)); the two block lines show the corrected engine's format. For a public attacker IP, the engine would add the AbuseIPDB fields: abuse score, report count, country, ISP and last-reported date.
+
+### Self-Review: Fixing the Auto-Block
+
+Reviewing my own evidence for writeup 01, I found the June 8 auto-block rule had not blocked anything. It sat at priority 1201 on port 80 only:
+
+- **Priority:** the engine took the highest existing priority plus one, placing the Deny after `Allow-SSH` (1000) and `Allow-HTTP` (1200). NSG rules are evaluated lowest number first and the first match wins, so the allows always matched first.
+- **Port:** the create call set no destination port, and the Azure CLI defaults it to 80, so SSH on 22 was never covered.
+- **Duplicate check:** any rule mentioning the IP counted as "already blocked", so the broken rule would have prevented a correct one.
+
+The engine now places the Deny in the lowest free priority below the first Allow rule, covers all ports and protocols, only treats a rule as a block if it would actually win evaluation, and records an IP as blocked only after Azure confirms. The attack in that run ended for other reasons (fail2ban or the end of Hydra's wordlist), which is the defense-in-depth layering working while one layer was broken.
 
 ---
 
 ## Detection Coverage
 
-| Attack Technique | Detected | Method | Rule |
-|-----------------|----------|--------|------|
-| SSH brute force (fast) | ✅ | auth.log → Filebeat → Kibana | >5 failures/60s |
-| SSH brute force (slow) | ✅ | auth.log → Filebeat → Kibana | >10 failures/10min |
-| SSH brute force (auto-block) | ✅ | Python alert engine → Azure NSG | >5 failures/60s |
-| Web app scanning (Nikto) | ✅ | Apache logs → Filebeat → Kibana | >100 requests/60s |
-| Successful SSH login | ✅ | auth.log → Filebeat | Accepted publickey |
-| nmap SYN port scan | ❌ | Needs Packetbeat | Network-level gap |
-| Post-exploitation file access | ❌ | Needs Auditbeat | Host-level gap |
-| SQL injection | 🔄 | See writeup | Planned |
-| XSS | 🔄 | See writeup | Planned |
-| Command injection | 🔄 | See writeup | Planned |
+Three levels: **Alert** means a rule fires automatically; **Searchable** means the events are in Elasticsearch and an analyst can find them in Kibana, but nothing fires; **Gap** means the events are not collected.
+
+| Attack Technique | Status | Log Source | Detection |
+|-----------------|--------|------------|-----------|
+| SSH brute force (fast) | Alert | auth.log | Kibana rule: >5 `Invalid user` in 60s |
+| SSH brute force (slow) | Alert | auth.log | Kibana rule: >10 `Invalid user` in 10 min |
+| SSH brute force (auto-block) | Alert + response | auth.log | Python engine: >5 per IP in 60s → NSG deny (fixed, Azure re-test pending) |
+| Web app scanning (Nikto) | Searchable | Apache access.log | `message: "Nikto"` (user-agent); volume rule planned |
+| Successful SSH login | Searchable | auth.log | `message: "Accepted publickey"` |
+| SQL injection | Searchable | Apache access.log | Writeup 03; payload-pattern rule planned |
+| XSS | Searchable | Apache access.log | Writeup 04; payload-pattern rule planned |
+| Command injection | Searchable | Apache access.log | Writeup 05; payload-pattern rule planned |
+| Web login brute force | Searchable | Apache access.log | Writeup 06; per-IP volume rule planned |
+| nmap SYN port scan | Gap | none | Needs Packetbeat |
+| Post-exploitation file access | Gap | none | Needs Auditbeat |
 
 ---
 
@@ -187,7 +200,7 @@ Each attack was simulated against the live lab environment. Writeups follow the 
 
 | # | Attack | Severity | OWASP | Writeup |
 |---|--------|----------|-------|---------|
-| 01 | SSH Credential Brute Force | High | A07 — Auth Failures | [writeups/01-ssh-brute-force.md](writeups/01-ssh-brute-force.md) |
+| 01 | SSH Credential Brute Force | Medium | A07 — Auth Failures | [writeups/01-ssh-brute-force.md](writeups/01-ssh-brute-force.md) |
 | 02 | Web Application Reconnaissance | Medium | A05 — Misconfiguration | [writeups/02-web-reconnaissance.md](writeups/02-web-reconnaissance.md) |
 | 03 | SQL Injection | Critical | A03 — Injection | [writeups/03-sql-injection.md](writeups/03-sql-injection.md) |
 | 04 | Cross-Site Scripting (XSS) | High | A03 — Injection | [writeups/04-xss.md](writeups/04-xss.md) |
@@ -289,9 +302,13 @@ ansible-playbook -i inventory.ini site.yml
 # Open Elasticsearch tunnel first
 ssh -i ~/.ssh/id_rsa -L 9200:10.0.1.5:9200 azureuser@JUMP_BOX_IP -N &
 
-# Run the engine
+# Run the engine (the AbuseIPDB key is only needed for public attacker IPs)
 cd python/
+export ABUSEIPDB_API_KEY=your-key
 python3 alert_engine.py
+
+# Reset the lab after a test: delete the engine's Deny rules for an IP
+python3 alert_engine.py --unblock 10.0.1.7
 ```
 
 ---
@@ -305,7 +322,7 @@ Bastion host pattern limits the attack surface to a single hardened entry point.
 Version compatibility between Elasticsearch, Logstash, and Kibana is critical. Docker guarantees all three run on the same 8.11.0 image with no dependency conflicts. Teardown and rebuild is a single command.
 
 **Why a custom Python alert engine alongside Kibana rules?**
-Kibana rules detect and log. The Python engine detects, enriches with threat intel, and automatically takes action — blocking attackers at the Azure NSG level within 5 seconds. Kibana cannot do this natively.
+Kibana rules detect and log. The Python engine detects, enriches with threat intel, and takes action by writing an Azure NSG deny rule. Kibana's free tier cannot change an Azure firewall.
 
 **Why Ansible for deployment automation?**
 Idempotent infrastructure as code. The entire agent configuration is reproducible from a single command. Adding a new monitored VM means adding one line to inventory.ini and running the playbook.

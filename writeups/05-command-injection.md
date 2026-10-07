@@ -167,6 +167,8 @@ message: "cmd" AND host.name: "dvwa-vm"
 
 ![Kibana showing command injection events](screenshots/05-kibana-cmd-events.png)
 
+Detection note: this query only finds events whose log line contains `cmd`; the payloads themselves are what a detection rule should match. Requests to `/vulnerabilities/exec/` carrying encoded shell operators (`%26%26`, `%3B`, `%7C`) or commands such as `cat+%2Fetc%2Fpasswd` are the signal.
+
 ### How Commands Appear in Apache Logs
 
 The injected commands appear URL-encoded in the Apache access log:
