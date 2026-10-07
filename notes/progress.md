@@ -141,6 +141,7 @@
       offset
 - [x] AbuseIPDB key now read from the ABUSEIPDB_API_KEY environment variable
 - [x] Added --unblock IP to reset the lab after a test
-- [ ] Add elk-stack/docker-compose.yml and Logstash pipeline config to the repo
-      (they still live only on elk-vm)
+- [x] Added elk-stack/docker-compose.yml and Logstash config to the repo
+      Kibana encryption key moved to a git-ignored .env file
+- [x] Redeployed Filebeat with Ansible (ok=10 changed=4)
 

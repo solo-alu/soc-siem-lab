@@ -222,6 +222,12 @@ soc-siem-lab/
 │   └── roles/
 │       ├── filebeat/            # Filebeat installation and config role
 │       └── metricbeat/          # Metricbeat installation and config role
+├── elk-stack/
+│   ├── docker-compose.yml       # Elasticsearch, Logstash, Kibana 8.11.0
+│   ├── .env.example             # Kibana encryption key template
+│   └── logstash/
+│       ├── config/logstash.yml
+│       └── pipeline/logstash.conf  # Beats input, grok filter, ES output
 ├── python/
 │   └── alert_engine.py          # Custom detection and response engine
 └── writeups/
@@ -285,8 +291,14 @@ ssh elk-vm
 sudo sysctl -w vm.max_map_count=262144
 echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
 
-# Install Docker and deploy ELK
-cd ~/elk-stack && docker compose up -d
+# Copy this repo's elk-stack/ folder to elk-vm, then from your machine:
+scp -r elk-stack elk-vm:~/
+
+# On elk-vm: install Docker, set the Kibana encryption key, start the stack
+cd ~/elk-stack
+cp .env.example .env
+sed -i "s/replace-with-64-hex-characters/$(openssl rand -hex 32)/" .env
+docker compose up -d
 ```
 
 ### 3. Run Ansible Automation
